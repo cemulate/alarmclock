@@ -18,162 +18,11 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular.min.js"></script>
     
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/1.9.6/TweenMax.min.js"></script>
-    <script src="http://d3lp1msu2r81bx.cloudfront.net/kjs/js/lib/kinetic-v4.5.0.min.js"></script>
-
     <script src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.0.0/moment.min.js"></script>
 
-    
+    <script src="/static/Application.js"></script>
 
     <script>
-
-    alarmAudioService = {
-        element: $("<audio preload loop>").append($("<source>").attr("src", "/static/clock.wav")),
-        
-        play: function () {
-            alarmAudioService.element.get(0).play()
-        },
-        
-        pause: function () {
-            alarmAudioService.element.get(0).pause()
-        }
-    }
-
-
-    function Alarm(date) {
-        this.date = date
-        this.timeLeft = moment.duration('seconds', 0)
-    }
-
-    Alarm.prototype.isExpired = function () {
-        return (this.timeLeft.asMilliseconds() < 0)
-    }
-
-    Alarm.prototype.setTimeLeft = function () {
-        this.timeLeft = moment.duration(this.date - moment())
-    }
-
-    Alarm.prototype.getFormattedTimeLeft = function () {
-        if (this.isExpired()) {
-            return "---"
-        } else {
-            return this.timeLeft.hours() + ":" + this.timeLeft.minutes() + ":" + this.timeLeft.seconds()
-        }
-    }
-
-
-    app = angular.module('AlarmClock', [])
-
-    app.controller('AppController', ['$scope', '$http', '$q', function ($scope, $http, $q) {
-
-        // The pending input text and main list of alarm objects
-        $scope.pending = ""
-        $scope.alarms = []
-
-        // The alarm that is currently going off. Can only have one.
-        $scope.currentAlarm = null
-
-        // The state information about the word challenge to turn the alarm off
-        $scope.challengeWord = "Challenge"
-        $scope.numWords = 5
-        $scope.wordsCompleted = 0
-
-        $scope.newWord = function () {
-            $.getJSON("http://randomword.setgetgo.com/get.php?callback=?", null, function (data) {
-                $scope.$apply(function () {
-                    $scope.challengeWord = $.trim(data.Word)
-                })
-            })
-        }
-
-        // For ordering by which alarms are expired, we need this simple proxy:
-        $scope.expirationSort = function(alarm) {
-            if (alarm.isExpired()) {
-                return -1
-            } else {
-                return 1
-            }
-        }
-
-        $scope.cancel = function (alarm) {
-            if (alarm == $scope.currentAlarm) {
-                $scope.currentAlarm.stop()
-                $scope.alarms.splice($scope.alarms.indexOf($scope.currentAlarm), 1)
-                $scope.currentAlarm = null
-            } else {
-                $scope.alarms.splice($scope.alarms.indexOf(alarm), 1)
-            }
-        }
-
-        $scope.checker = setInterval(function () {
-            $scope.$apply(function () {
-                var i = 0
-                for (i = 0; i < $scope.alarms.length; i ++) {
-                    var alarm = $scope.alarms[i]
-                    alarm.setTimeLeft()
-                    if (alarm.isExpired() && ($scope.currentAlarm == null)) {
-                        
-                        $scope.challengeWord = null
-                        $scope.newWord()
-                        $scope.numWords = 5
-                        $scope.wordsCompleted = 0
-
-                        $scope.currentAlarm = alarm
-                        alarmAudioService.play()
-                    }
-                }
-            })
-        }, 1000)
-
-        $scope.doSubmit = function () {
-            
-            // The text field has completely different function when turning off an alarm
-            if ($scope.currentAlarm) {
-
-                if ($scope.pending == $scope.challengeWord) {
-                    $scope.wordsCompleted += 1
-                    if ($scope.wordsCompleted == $scope.numWords) {
-                        $scope.alarms.splice($scope.alarms.indexOf($scope.currentAlarm), 1)
-                        $scope.currentAlarm = null
-                        alarmAudioService.pause()
-                    } else {
-                        $scope.challengeWord = null
-                        $scope.newWord()
-                    }
-                }
-
-            } else {
-
-                var i = 0
-
-                var parts = $scope.pending.split(",")
-                for (i = 0; i < parts.length; i ++) {
-                    parts[i] = $.trim(parts[i])
-                        
-                    var time = moment(parts[i], "HH:mm")
-                    var now = moment()
-                    var dayStart = moment().startOf('day')
-                    
-                    var chosen = dayStart.add({
-                        hours: time.hour(),
-                        minutes: time.minute()
-                    })
-
-                    while (chosen - now < 0) {
-                        chosen.add('hours', 12)
-                    }
-
-                    $scope.alarms.push(new Alarm(chosen))
-
-                }
-
-            }
-
-        }
-
-    }])
-
-
 
     $(document).ready(function () {
         $("#mainInput").keypress(function (e) {
@@ -209,8 +58,8 @@
     <div class="well well-large">
         <div class="row-fluid">
             <div class="" ng-if="currentAlarm != null">
-                <p><strong>Type word to continue: {{challengeWord}}</strong></p>
-                <p><strong>Words completed: {{wordsCompleted}} / {{numWords}}</strong></p>
+                <p><strong>Type word to continue: {{wordService.word}}</strong></p>
+                <p><strong>Words completed: {{wordsCompleted}} / {{settings.numWords}}</strong></p>
             </div>
             <div class="" ng-if="currentAlarm == null">
                 <p>Enter a comma separated list of times in the format HH:mm (24 hr time)</p>
