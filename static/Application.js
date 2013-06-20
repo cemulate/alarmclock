@@ -57,6 +57,7 @@ function ($scope, $http, $q, alarmAudioService, wordService) {
 
     // Give the view access to wordService's word
     $scope.wordService = wordService
+    $scope.alarmAudioService = alarmAudioService
     
 
     // The pending input text and main list of alarm objects
@@ -79,10 +80,13 @@ function ($scope, $http, $q, alarmAudioService, wordService) {
     
 
     $scope.settings = {
-        numWords: 6
+        numWords: 5
     }
 
     $scope.wordsCompleted = 0
+    $scope.percentage = function () {
+        return Math.round(($scope.wordsCompleted / $scope.settings.numWords) * 100)
+    }
 
 
     $scope.cancel = function (alarm) {

@@ -83,9 +83,12 @@
                             <p>
                                 <h3>{{alarm.date.format("MMMM Do, HH:mm")}}</h3>
                             </p>
-                            <p>
+                            <p ng-if="alarm.isExpired() == false">
                                 Remaining: {{alarm.getFormattedTimeLeft()}}
                             </p>
+                            <div class="progress" ng-if="alarm.isExpired() == true">
+                                <div class="bar" style="width: {{percentage()}}%;"></div>
+                            </div>
                         </div>
                         <div class="span1">
                             <div ng-if="!alarm.isExpired()">
