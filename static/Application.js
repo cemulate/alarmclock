@@ -3,10 +3,12 @@ app = angular.module('AlarmClock', [])
 app.service("alarmAudioService", function () {
     this.element = $("<audio preload loop>").append($("<source>").attr("src", "/static/clock.wav"))
     this.play = function () {
+        console.log("alarmAudioService: play")
         this.element.get(0).play()
     }
 
     this.pause = function () {
+        console.log("alarmAudioService: pause")
         this.element.get(0).pause()
     }
 })
@@ -111,6 +113,8 @@ function ($scope, $http, $q, alarmAudioService, wordService) {
                     $scope.wordsCompleted = 0
 
                     $scope.currentAlarm = alarm
+                    console.log("$scope.checker: set currentAlarm to")
+                    console.log($scope.currentAlarm)
                     alarmAudioService.play()
                 }
             }
